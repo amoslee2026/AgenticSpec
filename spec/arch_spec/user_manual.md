@@ -29,8 +29,11 @@ uv run alembic upgrade head              # 建库 + 载入 seed（terms）
 uv run agenticspec auth bootstrap       # 创建首个 admin（幂等）
 
 # 2) 启动服务
-uv run agenticspec-api --host 0.0.0.0 --port 8787   # 鉴权后方可对外监听
+uv run agenticspec-api --host 127.0.0.1 --port 8787 # 开发调试；常驻用 systemd user 单元（scripts/agenticspec-api.service）
 ```
+
+> **LAN 访问（ADR-007 S6）**：非环回访问不直接 `--host 0.0.0.0`，必须经 TLS 反向代理终止（否则会话 Cookie 可被嗅探）。
+> 一键配置：`sudo bash scripts/provision_lan_tls_httpd.sh`（自签证书 + httpd 443 反代 127.0.0.1:8787），然后浏览器访问 `https://<LAN_IP>/`。
 
 **注意**：无 `users` 表记录时系统拒绝所有请求（fail-closed 设计）——这是有意为之，避免「忘记配鉴权即裸奔」。
 

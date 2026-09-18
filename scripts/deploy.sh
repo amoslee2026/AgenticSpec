@@ -62,8 +62,7 @@ echo "  1. 放置管理员公钥：cp ~/.ssh/id_ed25519.pub $REPO/data/admin_key
 echo "  2. 重启服务触发自举：systemctl --user restart $UNIT_NAME"
 echo "  3. 验证身份：cd $REPO && uv run agenticspec auth whoami"
 echo
-echo "对外暴露（ADR-007 S6，二者缺一不可）："
-echo "  ① 已自举 admin（无 users 行则 fail-closed）"
-echo "  ② 经 TLS 反向代理终止（否则会话 Cookie 可被嗅探）"
-echo "  改 --host 0.0.0.0 见 scripts/$UNIT_NAME.service 注释"
+echo "LAN 访问（ADR-007 S6，TLS 反代终止，不改 --host）："
+echo "  sudo bash scripts/provision_lan_tls_httpd.sh"
+echo "  前提：已自举 admin（无 users 行则 fail-closed，全部 401）"
 echo "完成。"

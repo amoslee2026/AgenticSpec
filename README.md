@@ -33,6 +33,7 @@ uv run agenticspec auth whoami
 ```
 
 WebUI：浏览器访问 http://127.0.0.1:8787/ （SSH 挑战-响应登录，无密码）
+LAN 访问：`sudo bash scripts/provision_lan_tls_httpd.sh`（自签证书 + httpd 443 TLS 反代，ADR-007 S6）→ `https://<LAN_IP>/`
 
 ## 架构
 
