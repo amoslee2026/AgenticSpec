@@ -25,6 +25,16 @@ fi
 command -v httpd >/dev/null || { echo "错误：缺少 httpd（dnf install httpd mod_ssl）" >&2; exit 1; }
 [[ -f /etc/httpd/conf.d/ssl.conf ]] || { echo "错误：缺 mod_ssl（dnf install mod_ssl）" >&2; exit 1; }
 
+# 0) mod_ssl 默认站点证书缺失会卡 httpd -t（ssl.conf 的 _default_:443 引用 localhost.crt）
+if [[ ! -s /etc/pki/tls/certs/localhost.crt ]]; then
+  openssl req -x509 -newkey rsa:2048 -nodes -days 3650 \
+    -keyout /etc/pki/tls/private/localhost.key \
+    -out /etc/pki/tls/certs/localhost.crt \
+    -subj "/CN=localhost" -addext "subjectAltName=DNS:localhost" 2>/dev/null
+  chmod 600 /etc/pki/tls/private/localhost.key
+  echo "已补生成 mod_ssl 默认证书（/etc/pki/tls/certs/localhost.crt）"
+fi
+
 # 1) 自签证书（SAN=全部 IPv4；ZeroTier 装好后 zt 接口 IP 也在 hostname -I 里，重跑加 CERT_FORCE=1 即可）
 mapfile -t ALL_IPS < <(hostname -I | tr ' ' '\n' | sed '/^$/d')
 if [[ ! -s $CERT || ${CERT_FORCE:-0} = 1 ]]; then
