@@ -19,6 +19,11 @@ Environment=https_proxy=
 Environment=ftp_proxy=
 Environment=no_proxy=localhost,127.0.0.1,::1
 
+# LAN 访问（ADR-007 S6）：TLS 反代（httpd :443 → 127.0.0.1:8787）终止时，
+# 采信 X-Forwarded-Proto（Cookie 自动 Secure）与 X-Forwarded-For（真实客户端限流键）。
+# 详见 scripts/provision_lan_tls_httpd.sh
+Environment=AUTH_TRUSTED_PROXY=1
+
 # 默认 loopback（安全默认）；对外部署改 --host 0.0.0.0
 # 前提（二者缺一不可，ADR-007 S6）：
 #   ① 已自举 admin（无 users 行则 fail-closed，全部 401）
