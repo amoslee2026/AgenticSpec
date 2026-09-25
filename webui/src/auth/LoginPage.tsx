@@ -81,7 +81,13 @@ export function LoginPage() {
               <div className="step-title">
                 <span className="step-no">2</span> 在本机用 SSH 私钥签名（浏览器不接触私钥）
               </div>
-              <div className="cmd-hint">{command}</div>
+              <div className="cmd-hint">{winPrep}</div>
+              <div className="cmd-hint">{winSign}</div>
+              <div className="step-note">
+                Windows PowerShell / Linux Bash 通用，无需安装任何软件（系统内置 OpenSSH）。签名生成在
+                <code>%TEMP%\agenticspec-nonce.txt.sig</code>。
+                已安装 AgenticSpec CLI 时，可改用一条命令替代：<code>{cliSign}</code>
+              </div>
               <label className="field">
                 <span>公钥指纹（ssh-keygen -lf ~/.ssh/id_ed25519.pub 的输出）</span>
                 <input
