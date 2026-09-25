@@ -24,10 +24,10 @@ from agenticspec.observability.logger import get_logger
 log = get_logger("m13.mcp")
 
 
-def _text_error(exc: CliError) -> RuntimeError:
-    """CliError（含可操作指引）→ MCP 工具错误文案。"""
+def _text_error(exc: CliError) -> ToolError:
+    """CliError（含可操作指引）→ MCP 工具错误（ToolError，客户端以 isError 结果收到）。"""
     hint = "\n".join(exc.hint) if isinstance(exc.hint, (list, tuple)) else (exc.hint or "")
-    return RuntimeError(f"{exc.message}\n{hint}" if hint else exc.message)
+    return ToolError(f"{exc.message}\n{hint}" if hint else exc.message)
 
 
 def build_server(client: SigningClient | None = None) -> MCPServer:
