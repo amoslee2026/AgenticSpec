@@ -762,6 +762,7 @@ doc_app = typer.Typer(help="文档读取 / diff / 软删", no_args_is_help=True)
 node_app = typer.Typer(help="节点读写（乐观锁）", no_args_is_help=True)
 comment_app = typer.Typer(help="批注读写（调取人类标注，B11）", no_args_is_help=True)
 logs_app = typer.Typer(help="运行日志查询（薄封装 agentic-logger，ADR-010）", no_args_is_help=True)
+mcp_app = typer.Typer(help="MCP server（M13：stdio 标准服务，供 GigaPie/opencode 等 headless agent 挂载）", no_args_is_help=True)
 
 for group, name in (
     (auth_app, "auth"),
@@ -772,6 +773,7 @@ for group, name in (
     (node_app, "node"),
     (comment_app, "comment"),
     (logs_app, "logs"),
+    (mcp_app, "mcp"),
 ):
     app.add_typer(group, name=name)
 
