@@ -150,18 +150,21 @@ export function LoginPage() {
                 />
               </label>
               <div className="step-note">
-                自动识别 <code>FP SHA256:…</code> 行与 <code>-----BEGIN…END SSH SIGNATURE-----</code> 块；
-                识别失败时下方会展开手动输入。
+                自动识别 <code>FP SHA256:…</code> 行与 <code>-----BEGIN…END SSH SIGNATURE-----</code> 块，
+                识别成功后直接点「登录」。
               </div>
-              {parsed ? (
+              {parseState === "ok" ? (
                 <div className="notice ok">
                   已自动识别指纹 <code>{fingerprint}</code> 与 SSHSIG 签名，点「登录」即可。
-                  <button className="ghost" onClick={() => setParsed(false)}>手动修改</button>
+                  <button className="ghost" onClick={() => setParseState("failed")}>手动修改</button>
                 </div>
-              ) : (
+              ) : parseState === "failed" ? (
                 <>
+                  <div className="notice error">
+                    未能自动识别完整输出：请确认已完整复制「FP 行 + 签名块」，或手动填写下面两栏。
+                  </div>
                   <label className="field">
-                    <span>公钥指纹（手填时只复制 SHA256:… 那段即可）</span>
+                    <span>公钥指纹（只复制 SHA256:… 那段即可）</span>
                     <input
                       type="text"
                       placeholder="SHA256:…"
@@ -179,7 +182,7 @@ export function LoginPage() {
                     />
                   </label>
                 </>
-              )}
+              ) : null}
               <div className="row end">
                 <button
                   className="primary"
