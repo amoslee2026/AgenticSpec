@@ -44,9 +44,10 @@ export function LoginPage() {
     }
   }
 
-  const command = nonce
-    ? `uv run agenticspec auth sign --login --nonce ${nonce}`
-    : "uv run agenticspec auth sign --login --nonce <nonce>";
+  const nonceText = nonce ?? "<页面上的nonce>";
+  const winPrep = `[System.IO.File]::WriteAllText("$env:TEMP\\agenticspec-nonce.txt", "${nonceText}")`;
+  const winSign = `ssh-keygen -Y sign -f $env:USERPROFILE\\.ssh\\id_ed25519 -n agenticspec@auth "$env:TEMP\\agenticspec-nonce.txt"`;
+  const cliSign = `uv run agenticspec auth sign --login --nonce ${nonceText}`;
 
   return (
     <div className="login-wrap">
