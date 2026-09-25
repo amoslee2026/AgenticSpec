@@ -30,6 +30,9 @@ export function LoginPage() {
 
   async function submit() {
     if (!nonce || !fingerprint.trim() || !signature.trim()) {
+      if (!nonce) {
+        setError("挑战已缺失或过期：请先点「获取挑战」重新取 nonce 再签名。");
+      }
       return;
     }
     setBusy(true);
