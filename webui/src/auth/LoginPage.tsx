@@ -46,9 +46,20 @@ export function LoginPage() {
   }
 
   const nonceText = nonce ?? "<页面上的nonce>";
-  const winPrep = `[System.IO.File]::WriteAllText("$env:TEMP\\agenticspec-nonce.txt", "${nonceText}")`;
-  const winSign = `ssh-keygen -Y sign -f $env:USERPROFILE\\.ssh\\id_ed25519 -n agenticspec@auth "$env:TEMP\\agenticspec-nonce.txt"`;
+  // 一条命令完成：写 nonce 文件 → 签名 → 打印指纹（nonce 内嵌，复制即用）
+  const winOneCmd = `[System.IO.File]::WriteAllText("$env:TEMP\\agenticspec-nonce.txt", "${nonceText}") ; ssh-keygen -Y sign -f $env:USERPROFILE\\.ssh\\id_ed25519 -n agenticspec@auth "$env:TEMP\\agenticspec-nonce.txt" ; ssh-keygen -lf $env:USERPROFILE\\.ssh\\id_ed25519.pub`;
   const cliSign = `uv run agenticspec auth sign --login --nonce ${nonceText}`;
+
+  async function copyCmd() {
+    if (!nonce) return;
+    try {
+      await navigator.clipboard.writeText(winOneCmd);
+    } catch {
+      /* 剪贴板不可用（权限/非安全上下文）：用户手动框选复制 */
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
 
   return (
     <div className="login-wrap">
