@@ -126,20 +126,21 @@ export function LoginPage() {
           <details className="login-help">
             <summary>签名登录详细说明（首次使用必读）</summary>
             <div className="login-help-body">
-              <p>本系统无密码，身份唯一根为 SSH 公钥（ADR-007）：浏览器永不接触私钥，由你本机用私钥对一次性挑战签名后，再把签名粘贴回来换取 8 小时会话。</p>
+              <p>本系统无密码，身份唯一根为 SSH 公钥（ADR-007）：浏览器永不接触私钥，由你本机用私钥对一次性挑战签名后，再把签名粘贴回来换取长期会话（1 年滑动续期）。</p>
               <ol>
                 <li>
-                  <b>前提</b>：登录机持有与系统注册身份一致的 SSH 私钥（推荐 Ed25519），且能运行 CLI。私钥查找顺序：
-                  <code>$AGENTICSPEC_SSH_KEY</code> → <code>~/.ssh/id_ed25519</code> → <code>~/.ssh/id_rsa</code>；
-                  加密私钥的口令经环境变量 <code>AGENTICSPEC_SSH_KEY_PASSPHRASE</code> 传入。
+                  <b>前提</b>：登录机持有与系统注册身份一致的 SSH 私钥（推荐 Ed25519，无则先生成
+                  <code>ssh-keygen -t ed25519</code> 并让管理员注册公钥）。签名用系统内置 OpenSSH，<b>无需安装 AgenticSpec 软件或仓库</b>；
+                  如已装 AgenticSpec CLI，私钥查找顺序为 <code>$AGENTICSPEC_SSH_KEY</code> → <code>~/.ssh/id_ed25519</code> → <code>~/.ssh/id_rsa</code>。
                 </li>
                 <li>
                   <b>获取挑战</b>：点上方「获取挑战」按钮，页面显示一次性 nonce（有效期 120s，过期点「换一个」重取）。
                 </li>
                 <li>
-                  <b>本机签名</b>：在登录机的终端里运行（在 AgenticSpec 仓库目录下）：
-                  <div className="cmd-hint">{command}</div>
-                  命令输出以 <code>-----BEGIN SSH SIGNATURE-----</code> 开头的签名块。
+                  <b>本机签名</b>：在本机终端按上方步骤 2 的两条命令操作（Windows PowerShell / Linux Bash 均适用）：
+                  先把 nonce 不带换行写入文件，再用 <code>ssh-keygen -Y sign</code> 签名，输出在
+                  <code>%TEMP%\agenticspec-nonce.txt.sig</code>。已装 AgenticSpec CLI 时可改用
+                  <code>{cliSign}</code> 一条命令完成。
                 </li>
                 <li>
                   <b>取公钥指纹</b>：另开一条命令 <code>ssh-keygen -lf ~/.ssh/id_ed25519.pub</code>，
