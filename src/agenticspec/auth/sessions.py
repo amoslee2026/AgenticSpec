@@ -64,7 +64,7 @@ def _bad_signature_error(key_id: str, signature: str) -> AuthenticationError:
     区分「用错私钥」与「载荷 nonce 与挑战不一致」两类根因（S11 同验签器复用）。
     """
     try:
-        signer = parse_sshsig(signature).fingerprint
+        signer = fingerprint_of_blob(parse_sshsig(signature).public_key_blob)
     except SignatureFormatError as exc:
         return AuthenticationError(
             f"签名解析失败（{exc.reason}）：请粘贴完整 \"-----BEGIN SSH SIGNATURE-----…-----\" 块",
