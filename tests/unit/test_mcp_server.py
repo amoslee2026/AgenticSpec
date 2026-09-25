@@ -181,6 +181,7 @@ async def test_forbidden_error_surfaces_readable_result(key: Path) -> None:
         history,
         error=(403, {"detail": {"code": "AUTH_REJECTED", "message": "公钥未注册或其属主已禁用（S8）"}}),
     )
-    result = await srv.call_tool("docs_list", {})
-    assert result.is_error is True
-    assert "403" in _text(result)
+    with pytest.raises(ToolError) as excinfo:
+        await srv.call_tool("docs_list", {})
+    assert "403" in str(excinfo.value)
+    assert "公钥未注册" in str(excinfo.value)
