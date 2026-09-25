@@ -21,7 +21,7 @@ import pytest
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ed25519, padding, rsa
 
-from agenticspec.auth import signing, sshsig
+from agenticspec.auth import sessions, signing, sshsig
 from agenticspec.auth.errors import SignatureFormatError, SignatureVerificationError
 
 SSH_KEYGEN = shutil.which("ssh-keygen")
