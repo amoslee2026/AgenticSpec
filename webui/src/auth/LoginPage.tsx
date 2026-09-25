@@ -35,6 +35,7 @@ export function LoginPage() {
       const challenge = await authApi.challenge();
       setNonce(challenge.nonce);
       setSignature("");
+      setTtl(Math.max(0, Math.round((Date.parse(challenge.expiresAt) - Date.now()) / 1000)));
     } catch (exc) {
       setError(exc instanceof Error ? exc.message : String(exc));
     } finally {
@@ -42,11 +43,36 @@ export function LoginPage() {
     }
   }
 
+  // 挑战 600s 内自动续期：剩余 ≤12s 且未登录时静默换新 nonce（对应命令随之更新）
+  useEffect(() => {
+    if (!nonce || done) {
+      return;
+    }
+    const timer = window.setInterval(() => {
+      setTtl((left) => {
+        const next = left === null ? null : Math.max(0, left - 1);
+        if (next !== null && next <= 12 && !renewing) {
+          setRenewing(true);
+          void fetchChallenge().finally(() => setRenewing(false));
+        }
+        return next;
+      });
+    }, 1000);
+    return () => window.clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nonce, done, renewing]);
+
   async function submit() {
-    if (!nonce || !fingerprint.trim() || !signature.trim()) {
-      if (!nonce) {
-        setError("挑战已缺失或过期：请先点「获取挑战」重新取 nonce 再签名。");
-      }
+    if (!nonce) {
+      setError("挑战已缺失或过期：请先点「获取挑战」。");
+      return;
+    }
+    if (!fingerprint.trim()) {
+      setError("缺少公钥指纹：请把命令输出粘贴到上方自动识别，或手动填写指纹框。");
+      return;
+    }
+    if (!signature.trim()) {
+      setError("缺少 SSHSIG 签名：请把命令输出粘贴到上方自动识别，或手动填写签名框。");
       return;
     }
     setBusy(true);
