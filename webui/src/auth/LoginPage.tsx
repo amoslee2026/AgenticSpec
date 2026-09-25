@@ -206,7 +206,7 @@ export function LoginPage() {
               <div className="row end">
                 <button
                   className="primary"
-                  disabled={busy || !nonce || !fingerprint.trim() || !signature.trim()}
+                  disabled={busy}
                   onClick={() => void submit()}
                 >
                   登录
