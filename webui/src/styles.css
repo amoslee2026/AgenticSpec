@@ -609,8 +609,6 @@ label.field input, label.field select, label.field textarea { width: 100%; }
 .login-help-body code { font-family: var(--mono); font-size: .92em; background: var(--surface-2); padding: 1px 4px; border-radius: 4px; }
 .login-help-body .cmd-hint { margin: var(--sp-1) 0; padding: var(--sp-2) var(--sp-3); font-size: var(--fs-0); overflow-x: auto; }
 .login-help-notes { border-left: 3px solid var(--accent); padding-left: var(--sp-2); }
-.login-help-alt { border-left: 3px solid var(--line-strong); padding-left: var(--sp-2); }
-.login-help-alt .cmd-hint { margin: var(--sp-1) 0; padding: var(--sp-2) var(--sp-3); font-size: var(--fs-0); overflow-x: auto; }
 
 .kv { display: grid; grid-template-columns: max-content 1fr; gap: var(--sp-1) var(--sp-4); font-size: var(--fs-1); }
 .kv dt { color: var(--ink-3); }
