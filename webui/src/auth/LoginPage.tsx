@@ -91,17 +91,27 @@ export function LoginPage() {
 
             <div className="login-step">
               <div className="step-title">
-                <span className="step-no">2</span> 在本机用 SSH 私钥签名（浏览器不接触私钥）
+                <span className="step-no">2</span> 在本机签名（复制命令即可，浏览器不接触私钥）
               </div>
-              <div className="cmd-hint">{winPrep}</div>
-              <div className="cmd-hint">{winSign}</div>
+              {nonce ? (
+                <div className="cmd-wrap">
+                  <div className="cmd-hint">{winOneCmd}</div>
+                  <div className="cmd-actions">
+                    <button className="ghost" onClick={() => void copyCmd()}>复制命令</button>
+                    {copied ? <span className="cmd-copied">已复制，去 PowerShell 粘贴运行</span> : null}
+                  </div>
+                </div>
+              ) : (
+                <div className="step-note">先点上方「获取挑战」，这里会生成一条带 token 的签名命令。</div>
+              )}
               <div className="step-note">
-                Windows PowerShell / Linux Bash 通用，无需安装任何软件（系统内置 OpenSSH）。签名生成在
-                <code>%TEMP%\agenticspec-nonce.txt.sig</code>。
-                已安装 AgenticSpec CLI 时，可改用一条命令替代：<code>{cliSign}</code>
+                复制上面一条命令到 <b>Windows PowerShell</b> 回车即完成签名（Win10/11 内置 OpenSSH，
+                无需安装）：运行完终端输出公钥指纹 <code>SHA256:…</code>，签名文件在
+                <code>%TEMP%\agenticspec-nonce.txt.sig</code>。已装 AgenticSpec CLI 时可改用
+                <code>{cliSign}</code>。
               </div>
               <label className="field">
-                <span>公钥指纹（ssh-keygen -lf ~/.ssh/id_ed25519.pub 的输出）</span>
+                <span>公钥指纹（上条命令运行后终端输出的 SHA256:…）</span>
                 <input
                   type="text"
                   placeholder="SHA256:…"
