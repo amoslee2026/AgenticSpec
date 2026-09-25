@@ -136,8 +136,11 @@ def fingerprint(public_key_line: str) -> str:
 
 
 def normalize_key_id(key_id: str) -> str:
-    """归一 ``key_id``：容忍客户端省略 ``SHA256:`` 前缀（前缀大小写不敏感）。"""
+    """归一 ``key_id``：容忍省略 ``SHA256:`` 前缀（大小写不敏感）与 ``ssh-keygen -lf``
+    整行输出（``SHA256:… comment`` 尾随注释/位数，只取指纹段）。"""
     stripped = key_id.strip()
+    parts = stripped.split()
+    stripped = parts[0] if parts else ""
     if stripped.lower().startswith(KEY_ID_PREFIX.lower()):
         return KEY_ID_PREFIX + stripped[len(KEY_ID_PREFIX):]
     return KEY_ID_PREFIX + stripped
