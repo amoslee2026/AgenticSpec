@@ -195,9 +195,9 @@ export function LoginPage() {
                 </li>
                 <li>
                   <b>本机签名</b>：回到步骤 2 复制那条已带 token 的单行命令，到 PowerShell / Bash 粘贴回车即可。
-                  Win10/11 与 Linux 都内置 OpenSSH，<b>无需安装任何东西</b>。运行完拿到终端输出的指纹
-                  <code>SHA256:…</code> 与签名文件 <code>%TEMP%\agenticspec-nonce.txt.sig</code>。
-                  已装 AgenticSpec CLI 时可改用 <code>{cliSign}</code>。
+                  Win10/11 与 Linux 都内置 OpenSSH，<b>无需安装任何东西</b>。终端会输出
+                  <code>FP SHA256:…</code> 指纹行与 <code>-----BEGIN…END SSH SIGNATURE-----</code> 签名块两段，
+                  整段复制贴回第 3 步自动拆分。已装 AgenticSpec CLI 时可改用 <code>{cliSign}</code>。
                 </li>
                 <li>
                   <b>取公钥指纹</b>：另开一条命令 <code>ssh-keygen -lf ~/.ssh/id_ed25519.pub</code>，
