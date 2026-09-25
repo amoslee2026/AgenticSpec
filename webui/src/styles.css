@@ -600,6 +600,10 @@ label.field input, label.field select, label.field textarea { width: 100%; }
 
 .login-step .step-note { font-size: var(--fs-0); color: var(--ink-3); line-height: 1.55; }
 .login-step .step-note code { font-family: var(--mono); font-size: .92em; background: var(--surface-2); padding: 1px 4px; border-radius: 4px; }
+.cmd-wrap { display: grid; gap: var(--sp-2); }
+.cmd-wrap .cmd-hint { overflow-x: auto; white-space: pre-wrap; word-break: break-all; }
+.cmd-actions { display: flex; align-items: center; gap: var(--sp-2); }
+.cmd-copied { font-size: var(--fs-0); color: var(--ok); }
 
 .login-help { margin-top: var(--sp-3); border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); }
 .login-help summary { cursor: pointer; padding: var(--sp-2) var(--sp-3); color: var(--ink-2); font-size: var(--fs-1); font-weight: 600; user-select: none; }
