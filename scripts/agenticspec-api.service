@@ -24,10 +24,6 @@ Environment=no_proxy=localhost,127.0.0.1,::1
 # 详见 scripts/provision_lan_tls_httpd.sh
 Environment=AUTH_TRUSTED_PROXY=1
 
-# 会话有效期 1 年（一次签名长期有效，用户决策 2026-09-25；滑动续期）
-# unit 内 Environment= 晚于 EnvironmentFile= 生效，覆盖 .env 的 SESSION_TTL_HOURS
-Environment=SESSION_TTL_HOURS=8760
-
 # 默认 loopback（安全默认）；对外部署改 --host 0.0.0.0
 # 前提（二者缺一不可，ADR-007 S6）：
 #   ① 已自举 admin（无 users 行则 fail-closed，全部 401）
