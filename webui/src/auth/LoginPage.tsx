@@ -159,10 +159,10 @@ export function LoginPage() {
                   <b>获取挑战</b>：点上方「获取挑战」按钮，页面显示一次性 nonce（有效期 120s，过期点「换一个」重取）。
                 </li>
                 <li>
-                  <b>本机签名</b>：在本机终端按上方步骤 2 的两条命令操作（Windows PowerShell / Linux Bash 均适用）：
-                  先把 nonce 不带换行写入文件，再用 <code>ssh-keygen -Y sign</code> 签名，输出在
-                  <code>%TEMP%\agenticspec-nonce.txt.sig</code>。已装 AgenticSpec CLI 时可改用
-                  <code>{cliSign}</code> 一条命令完成。
+                  <b>本机签名</b>：回到步骤 2 复制那条已带 token 的单行命令，到 PowerShell / Bash 粘贴回车即可。
+                  Win10/11 与 Linux 都内置 OpenSSH，<b>无需安装任何东西</b>。运行完拿到终端输出的指纹
+                  <code>SHA256:…</code> 与签名文件 <code>%TEMP%\agenticspec-nonce.txt.sig</code>。
+                  已装 AgenticSpec CLI 时可改用 <code>{cliSign}</code>。
                 </li>
                 <li>
                   <b>取公钥指纹</b>：另开一条命令 <code>ssh-keygen -lf ~/.ssh/id_ed25519.pub</code>，
