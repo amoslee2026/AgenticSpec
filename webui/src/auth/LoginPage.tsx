@@ -143,9 +143,10 @@ export function LoginPage() {
               )}
               <div className="step-note">
                 复制上面一条命令到 <b>Windows PowerShell</b> 回车即完成签名（Win10/11 内置 OpenSSH，
-                无需安装）：终端会输出两段——<code>FP SHA256:…</code> 指纹行与
-                <code>-----BEGIN…END SSH SIGNATURE-----</code> 签名块，整段贴到第 3 步即可自动拆分。
-                已装 AgenticSpec CLI 时可改用 <code>{cliSign}</code>。
+                无需安装）：终端会输出三行——<code>NC 挑战原文</code>（应与页面顶部 nonce 一致）、
+                <code>FP SHA256:…</code> 指纹行、<code>-----BEGIN…END SSH SIGNATURE-----</code> 签名块；
+                整段贴到第 3 步即可自动拆分。若 <code>NC</code> 与页面 nonce 不一致，说明挑战已更换，
+                重新复制命令再签。已装 AgenticSpec CLI 时可改用 <code>{cliSign}</code>。
               </div>
             </div>
 
