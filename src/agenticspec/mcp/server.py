@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
 from agenticspec.auth.signing import default_key_path
 from agenticspec.cli import CliError, SigningClient
