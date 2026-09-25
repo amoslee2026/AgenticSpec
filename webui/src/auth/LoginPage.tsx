@@ -119,9 +119,9 @@ export function LoginPage() {
               )}
               <div className="step-note">
                 复制上面一条命令到 <b>Windows PowerShell</b> 回车即完成签名（Win10/11 内置 OpenSSH，
-                无需安装）：运行完终端输出公钥指纹 <code>SHA256:…</code>，签名文件在
-                <code>%TEMP%\agenticspec-nonce.txt.sig</code>。已装 AgenticSpec CLI 时可改用
-                <code>{cliSign}</code>。
+                无需安装）：终端会输出两段——<code>FP SHA256:…</code> 指纹行与
+                <code>-----BEGIN…END SSH SIGNATURE-----</code> 签名块，整段贴到第 3 步即可自动拆分。
+                已装 AgenticSpec CLI 时可改用 <code>{cliSign}</code>。
               </div>
               <label className="field">
                 <span>公钥指纹（上条命令运行后终端输出的 SHA256:…）</span>
