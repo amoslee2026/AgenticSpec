@@ -13,6 +13,16 @@ export function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [pasteOut, setPasteOut] = useState("");
+
+  /** 命令输出 → 自动提取 FP 指纹行与 SSHSIG 签名块，回填两个输入框。 */
+  function onPasteOutput(text: string) {
+    setPasteOut(text);
+    const fp = text.match(/^FP\s+(\S+)/m)?.[1];
+    const sig = text.match(/-----BEGIN SSH SIGNATURE-----[\s\S]*?-----END SSH SIGNATURE-----/)?.[0];
+    if (fp) setFingerprint(fp);
+    if (sig) setSignature(sig);
+  }
 
   async function fetchChallenge() {
     setBusy(true);
