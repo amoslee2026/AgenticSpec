@@ -12,6 +12,7 @@ export function LoginPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   async function fetchChallenge() {
     setBusy(true);
