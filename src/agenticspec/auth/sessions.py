@@ -86,8 +86,8 @@ log = get_logger("m10.sessions")
 SESSION_COOKIE_NAME: Final = "agenticspec_session"
 """会话 Cookie 名（httpOnly/SameSite=Lax；Secure 见 :mod:`agenticspec.auth.middleware`）。"""
 
-CHALLENGE_TTL_SECONDS: Final = 120
-"""登录挑战 nonce TTL（REQ-M10-F02）。"""
+CHALLENGE_TTL_SECONDS: Final = 600
+"""登录挑战 nonce TTL（REQ-M10-F02；600s 给跨机器签名/粘贴留足操作时间）。"""
 
 FUTURE_SKEW_SECONDS: Final = 30
 """未来时间戳容忍（S3：``偏移 ∈ [−30s, +SIGNATURE_MAX_SKEW_SECONDS]``）。"""
