@@ -136,10 +136,32 @@ export function LoginPage() {
 
             <div className="login-step">
               <div className="step-title">
-                <span className="step-no">3</span> 粘贴签名并登录
+                <span className="step-no">3</span> 把命令输出贴回来，自动拆分后登录
               </div>
               <label className="field">
-                <span>SSHSIG 签名（base64 或 armor 均可）</span>
+                <span>粘贴上一步命令的完整输出（一段搞定）</span>
+                <textarea
+                  rows={5}
+                  placeholder={"FP SHA256:…\n-----BEGIN SSH SIGNATURE-----\n…\n-----END SSH SIGNATURE-----"}
+                  value={pasteOut}
+                  onChange={(e) => onPasteOutput(e.target.value)}
+                />
+              </label>
+              <div className="step-note">
+                自动识别 <code>FP SHA256:…</code> 行与 <code>-----BEGIN…END SSH SIGNATURE-----</code> 块并填入下方；
+                识别失败或需手改时，直接编辑下面两个框。
+              </div>
+              <label className="field">
+                <span>公钥指纹（已自动填；手填时只复制 SHA256:… 那段即可）</span>
+                <input
+                  type="text"
+                  placeholder="SHA256:…"
+                  value={fingerprint}
+                  onChange={(e) => setFingerprint(e.target.value)}
+                />
+              </label>
+              <label className="field">
+                <span>SSHSIG 签名（已自动填）</span>
                 <textarea
                   rows={4}
                   placeholder={"-----BEGIN SSH SIGNATURE-----\n…\n-----END SSH SIGNATURE-----"}
