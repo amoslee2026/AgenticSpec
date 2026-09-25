@@ -14,6 +14,7 @@ export function LoginPage() {
   const [done, setDone] = useState(false);
   const [copied, setCopied] = useState(false);
   const [pasteOut, setPasteOut] = useState("");
+  const [parsed, setParsed] = useState(false);
 
   /** 命令输出 → 自动提取 FP 指纹行与 SSHSIG 签名块，回填两个输入框。 */
   function onPasteOutput(text: string) {
@@ -22,6 +23,7 @@ export function LoginPage() {
     const sig = text.match(/-----BEGIN SSH SIGNATURE-----[\s\S]*?-----END SSH SIGNATURE-----/)?.[0];
     if (fp) setFingerprint(fp);
     if (sig) setSignature(sig);
+    setParsed(Boolean(fp && sig));
   }
 
   async function fetchChallenge() {
