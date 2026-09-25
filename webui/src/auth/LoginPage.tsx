@@ -150,27 +150,36 @@ export function LoginPage() {
                 />
               </label>
               <div className="step-note">
-                自动识别 <code>FP SHA256:…</code> 行与 <code>-----BEGIN…END SSH SIGNATURE-----</code> 块并填入下方；
-                识别失败或需手改时，直接编辑下面两个框。
+                自动识别 <code>FP SHA256:…</code> 行与 <code>-----BEGIN…END SSH SIGNATURE-----</code> 块；
+                识别失败时下方会展开手动输入。
               </div>
-              <label className="field">
-                <span>公钥指纹（已自动填；手填时只复制 SHA256:… 那段即可）</span>
-                <input
-                  type="text"
-                  placeholder="SHA256:…"
-                  value={fingerprint}
-                  onChange={(e) => setFingerprint(e.target.value)}
-                />
-              </label>
-              <label className="field">
-                <span>SSHSIG 签名（已自动填）</span>
-                <textarea
-                  rows={4}
-                  placeholder={"-----BEGIN SSH SIGNATURE-----\n…\n-----END SSH SIGNATURE-----"}
-                  value={signature}
-                  onChange={(e) => setSignature(e.target.value)}
-                />
-              </label>
+              {parsed ? (
+                <div className="notice ok">
+                  已自动识别指纹 <code>{fingerprint}</code> 与 SSHSIG 签名，点「登录」即可。
+                  <button className="ghost" onClick={() => setParsed(false)}>手动修改</button>
+                </div>
+              ) : (
+                <>
+                  <label className="field">
+                    <span>公钥指纹（手填时只复制 SHA256:… 那段即可）</span>
+                    <input
+                      type="text"
+                      placeholder="SHA256:…"
+                      value={fingerprint}
+                      onChange={(e) => setFingerprint(e.target.value)}
+                    />
+                  </label>
+                  <label className="field">
+                    <span>SSHSIG 签名</span>
+                    <textarea
+                      rows={4}
+                      placeholder={"-----BEGIN SSH SIGNATURE-----\n…\n-----END SSH SIGNATURE-----"}
+                      value={signature}
+                      onChange={(e) => setSignature(e.target.value)}
+                    />
+                  </label>
+                </>
+              )}
               <div className="row end">
                 <button
                   className="primary"
