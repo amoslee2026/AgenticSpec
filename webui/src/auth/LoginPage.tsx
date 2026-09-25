@@ -146,7 +146,7 @@ export function LoginPage() {
                 <p>常见问题：</p>
                 <ul>
                   <li>找不到私钥 / 提示无可用 SSH 私钥：先 <code>ssh-keygen -t ed25519</code> 生成并注册公钥（管理员在「用户管理」添加）。</li>
-                  <li>验签失败（SignatureVerificationError）：公钥未被注册，或本机时钟偏移超过 ±300s（超前 >30s 同样拒绝）——先同步 NTP 再重试。</li>
+                  <li>验签失败（SignatureVerificationError）：公钥未被注册，或本机时钟偏移超过 ±300s（超前 &gt;30s 同样拒绝）——先同步 NTP 再重试。</li>
                   <li>nonce 已使用（重放拒绝）：签名只能用一次，重新获取挑战再签。</li>
                   <li>系统无任何 <code>active</code> admin 时全部请求 401（fail-closed）：管理员先执行 <code>agenticspec auth bootstrap</code> 自举。</li>
                 </ul>
