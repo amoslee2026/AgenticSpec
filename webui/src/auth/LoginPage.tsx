@@ -114,7 +114,7 @@ export function LoginPage() {
               {nonce ? (
                 <div className="nonce-box">
                   <span>{nonce}</span>
-                  {ttl !== null ? <span className="chip">挑战剩余 {ttl}s（自动续期）</span> : null}
+                  {ttl !== null ? <span className="chip">挑战剩余 {ttl}s（过期请点换一个）</span> : null}
                   <button className="ghost" onClick={() => void fetchChallenge()} disabled={busy}>
                     换一个
                   </button>
