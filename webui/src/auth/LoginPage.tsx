@@ -116,6 +116,43 @@ export function LoginPage() {
               </div>
             </div>
           </div>
+          <details className="login-help">
+            <summary>签名登录详细说明（首次使用必读）</summary>
+            <div className="login-help-body">
+              <p>本系统无密码，身份唯一根为 SSH 公钥（ADR-007）：浏览器永不接触私钥，由你本机用私钥对一次性挑战签名后，再把签名粘贴回来换取 8 小时会话。</p>
+              <ol>
+                <li>
+                  <b>前提</b>：登录机持有与系统注册身份一致的 SSH 私钥（推荐 Ed25519），且能运行 CLI。私钥查找顺序：
+                  <code>$AGENTICSPEC_SSH_KEY</code> → <code>~/.ssh/id_ed25519</code> → <code>~/.ssh/id_rsa</code>；
+                  加密私钥的口令经环境变量 <code>AGENTICSPEC_SSH_KEY_PASSPHRASE</code> 传入。
+                </li>
+                <li>
+                  <b>获取挑战</b>：点上方「获取挑战」按钮，页面显示一次性 nonce（有效期 120s，过期点「换一个」重取）。
+                </li>
+                <li>
+                  <b>本机签名</b>：在登录机的终端里运行（在 AgenticSpec 仓库目录下）：
+                  <div className="cmd-hint">{command}</div>
+                  命令输出以 <code>-----BEGIN SSH SIGNATURE-----</code> 开头的签名块。
+                </li>
+                <li>
+                  <b>取公钥指纹</b>：另开一条命令 <code>ssh-keygen -lf ~/.ssh/id_ed25519.pub</code>，
+                  复制输出中形如 <code>SHA256:…</code> 的那段（与签名所用私钥配对）。
+                </li>
+                <li>
+                  <b>粘贴登录</b>：把指纹与完整签名块分别粘贴到上方输入框，点「登录」。
+                </li>
+              </ol>
+              <div className="login-help-notes">
+                <p>常见问题：</p>
+                <ul>
+                  <li>找不到私钥 / 提示无可用 SSH 私钥：先 <code>ssh-keygen -t ed25519</code> 生成并注册公钥（管理员在「用户管理」添加）。</li>
+                  <li>验签失败（SignatureVerificationError）：公钥未被注册，或本机时钟偏移超过 ±300s（超前 >30s 同样拒绝）——先同步 NTP 再重试。</li>
+                  <li>nonce 已使用（重放拒绝）：签名只能用一次，重新获取挑战再签。</li>
+                  <li>系统无任何 <code>active</code> admin 时全部请求 401（fail-closed）：管理员先执行 <code>agenticspec auth bootstrap</code> 自举。</li>
+                </ul>
+              </div>
+            </div>
+          </details>
           <div className="login-foot">
             会话 8 小时滑动续期 · 无密码体系，身份唯一根为 SSH 公钥（ADR-007）
           </div>
