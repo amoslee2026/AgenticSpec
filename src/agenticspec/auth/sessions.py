@@ -296,7 +296,7 @@ async def login(
             verify_sshsig(key["public_key"], signature, login_payload(nonce))
         except AuthError as exc:
             log.warn("login signature rejected", op="login", key_id=key_id, reason=exc.reason)
-            raise _bad_signature_error(key_id, signature) from None
+            raise _bad_signature_error(exc, key_id, signature) from None
         consumed = await session.execute(
             delete(nonces).where(nonces.c.nonce == nonce, nonces.c.user_id.is_(None))
         )
