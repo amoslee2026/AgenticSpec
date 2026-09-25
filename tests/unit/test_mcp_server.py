@@ -15,6 +15,7 @@ from cryptography.hazmat.primitives.asymmetric import ed25519
 
 from agenticspec.cli import SigningClient
 from agenticspec.mcp.server import build_server
+from mcp.server.mcpserver.exceptions import ToolError
 
 
 def _keypair(tmp_path: Path) -> Path:
