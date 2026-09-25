@@ -606,7 +606,7 @@ async def test_login_nonce_replay_and_expiry(
     async with database.transaction() as session:
         await session.execute(
             text("UPDATE nonces SET seen_at = :ts WHERE nonce = :n"),
-            {"ts": datetime.now(timezone.utc) - timedelta(seconds=CHALLENGE_TTL_SECONDS + 1), "n": expired["nonce"]},
+            {"ts": datetime.now(timezone.utc) - timedelta(seconds=sessions.CHALLENGE_TTL_SECONDS + 1), "n": expired["nonce"]},
         )
     stale = await client.post(
         "/api/v1/auth/login",
