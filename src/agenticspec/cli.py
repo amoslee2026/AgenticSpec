@@ -1945,6 +1945,17 @@ def _run_logger(context: typer.Context, subcommand: str, options: Sequence[str])
         )
 
 
+@command(mcp_app, "serve")
+def mcp_serve() -> None:
+    """运行 stdio MCP server（M13）。身份=本进程 SSH 私钥账号：
+    ``AGENTICSPEC_SSH_KEY`` → ``~/.ssh/id_ed25519`` → ``~/.ssh/id_rsa``；
+    base URL 走 ``AGENTICSPEC_API_URL``（缺省 http://127.0.0.1:8787）。Ctrl-C 退出。
+    """
+    from agenticspec.mcp.server import run_stdio
+
+    run_stdio()
+
+
 def main(argv: Sequence[str] | None = None) -> None:
     """进程入口（``python -m agenticspec.cli``；console script 直接用 ``app``）。"""
     app(args=list(argv) if argv is not None else None, prog_name="agenticspec")
