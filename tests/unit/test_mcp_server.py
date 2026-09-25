@@ -1,7 +1,7 @@
 """M13 MCP server（unit）：工具调用 → 签名 REST 请求 的映射（MockTransport 注入，不触网）。
 
 覆盖：10 个工具的 method/path/params/body 映射、每请求携带四个签名头、
-HTTP 401/403 → 工具错误文案（CliError 指引透传）。
+HTTP 401/403 → 工具错误（ToolError → 客户端 isError 结果 + 指引透传）。
 """
 
 from __future__ import annotations
@@ -39,12 +39,22 @@ def _keypair(tmp_path: Path) -> Path:
 def _server(
     key: Path,
     history: list[tuple[str, httpx.Request]],
-    payload: object = None,
-    status: int = 200,
+    responses: dict[str, object] | None = None,
+    error: tuple[int, object] | None = None,
 ):
+    """``responses``: {url_path_prefix: json}；``error``: (status, json) 优先；DELETE → 204。"""
+    responses = responses or {}
+
     def handler(request: httpx.Request) -> httpx.Response:
         history.append((request.method, request))
-        return httpx.Response(status, json=payload if payload is not None else {})
+        if error is not None:
+            return httpx.Response(error[0], json=error[1])
+        if request.method == "DELETE":
+            return httpx.Response(204)
+        for prefix, payload in responses.items():
+            if request.url.path.startswith(prefix):
+                return httpx.Response(200, json=payload)
+        return httpx.Response(200, json={})
 
     client = SigningClient(
         key_path=key,
@@ -72,7 +82,7 @@ def _assert_signed(headers: httpx.Headers) -> None:
 
 async def test_docs_list_maps_get_and_signs(key: Path) -> None:
     history: list[tuple[str, httpx.Request]] = []
-    srv = _server(key, history, payload=[{"docId": "SPEC-X"}])
+    srv = _server(key, history, responses={"/api/v1/docs": [{"docId": "SPEC-X"}]})
     result = await srv.call_tool("docs_list", {})
     assert result.is_error is False
     assert '"SPEC-X"' in _text(result)
@@ -84,23 +94,28 @@ async def test_docs_list_maps_get_and_signs(key: Path) -> None:
 
 async def test_docs_list_status_filter(key: Path) -> None:
     history: list[tuple[str, httpx.Request]] = []
-    srv = _server(key, history)
+    srv = _server(key, history, responses={"/api/v1/docs": []})
     await srv.call_tool("docs_list", {"status": "active"})
     assert history[0][1].url.params["status"] == "active"
 
 
-async def test_docs_get_and_sections(key: Path) -> None:
+async def test_docs_get_maps_path(key: Path) -> None:
     history: list[tuple[str, httpx.Request]] = []
-    srv = _server(key, history)
+    srv = _server(key, history, responses={"/api/v1/docs/SPEC-X": {"docId": "SPEC-X"}})
     await srv.call_tool("docs_get", {"doc_id": "SPEC-X"})
     assert (history[0][0], history[0][1].url.path) == ("GET", "/api/v1/docs/SPEC-X")
+
+
+async def test_docs_sections_maps_path(key: Path) -> None:
+    history: list[tuple[str, httpx.Request]] = []
+    srv = _server(key, history, responses={"/api/v1/docs/SPEC-X/sections": []})
     await srv.call_tool("docs_sections", {"doc_id": "SPEC-X"})
-    assert (history[1][0], history[1][1].url.path) == ("GET", "/api/v1/docs/SPEC-X/sections")
+    assert (history[0][0], history[0][1].url.path) == ("GET", "/api/v1/docs/SPEC-X/sections")
 
 
 async def test_docs_render_optional_section(key: Path) -> None:
     history: list[tuple[str, httpx.Request]] = []
-    srv = _server(key, history)
+    srv = _server(key, history, responses={"/api/v1/docs/SPEC-X/render": {"markdown": "x"}})
     await srv.call_tool("docs_render", {"doc_id": "SPEC-X", "section": "1.2"})
     req = history[0][1]
     assert req.url.path == "/api/v1/docs/SPEC-X/render"
@@ -109,7 +124,14 @@ async def test_docs_render_optional_section(key: Path) -> None:
 
 async def test_nodes_list_and_get(key: Path) -> None:
     history: list[tuple[str, httpx.Request]] = []
-    srv = _server(key, history)
+    srv = _server(
+        key,
+        history,
+        responses={
+            "/api/v1/docs/SPEC-X/nodes": [],
+            "/api/v1/nodes/01a0aa40-1990-7dce-9368-d9bfe8d6d045": {"nodeId": "x"},
+        },
+    )
     await srv.call_tool("nodes_list", {"doc_id": "SPEC-X"})
     assert history[0][1].url.path == "/api/v1/docs/SPEC-X/nodes"
     await srv.call_tool("nodes_get", {"node_id": "01a0aa40-1990-7dce-9368-d9bfe8d6d045", "doc_id": "SPEC-X"})
@@ -120,7 +142,7 @@ async def test_nodes_list_and_get(key: Path) -> None:
 
 async def test_nodes_write_posts_body(key: Path) -> None:
     history: list[tuple[str, httpx.Request]] = []
-    srv = _server(key, history)
+    srv = _server(key, history, responses={"/api/v1/nodes": {"nodeId": "x"}})
     body = {"docId": "SPEC-X", "atomType": "prose", "content": {"text": "hi"}, "expectedVersion": 3}
     await srv.call_tool("nodes_write", {"body": body})
     method, req = history[0]
@@ -143,7 +165,7 @@ async def test_nodes_delete_requires_expected_version(key: Path) -> None:
 
 async def test_refs_write_and_remove(key: Path) -> None:
     history: list[tuple[str, httpx.Request]] = []
-    srv = _server(key, history)
+    srv = _server(key, history, responses={"/api/v1/refs": {}})
     ref = {"src": "01a0aa40-1990-7dce-9368-d9bfe8d6d045", "dstDoc": "SPEC-Y", "kind": "references"}
     await srv.call_tool("refs_write", {"body": ref})
     assert (history[0][0], history[0][1].url.path) == ("POST", "/api/v1/refs")
@@ -151,13 +173,12 @@ async def test_refs_write_and_remove(key: Path) -> None:
     assert (history[1][0], history[1][1].url.path) == ("DELETE", "/api/v1/refs")
 
 
-async def test_forbidden_error_surfaces_readable_text(key: Path) -> None:
+async def test_forbidden_error_surfaces_readable_result(key: Path) -> None:
     history: list[tuple[str, httpx.Request]] = []
     srv = _server(
         key,
         history,
-        status=403,
-        payload={"detail": {"code": "AUTH_REJECTED", "message": "公钥未注册或其属主已禁用（S8）"}},
+        error=(403, {"detail": {"code": "AUTH_REJECTED", "message": "公钥未注册或其属主已禁用（S8）"}}),
     )
     result = await srv.call_tool("docs_list", {})
     assert result.is_error is True
