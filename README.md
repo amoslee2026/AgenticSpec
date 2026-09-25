@@ -64,6 +64,33 @@ AgenticSpec 单体（FastAPI + PG16）
 | P5 | 口径唯一（normalize/rule_id/anchor） | 单测固定 |
 | **P6** | **运行期 LLM 无关**（不调用任何 LLM） | import 白名单 + 断网 e2e + 依赖树 |
 
+## MCP Server（M13）
+
+AgenticSpec 提供标准 MCP（Model Context Protocol）stdio 服务，供 GigaPie/opencode 等 headless
+agent 以工具方式读写知识库：
+
+```bash
+# 本地仓库
+uv run agenticspec mcp serve
+# 或已安装包（LAN 其他 Linux 机）：agenticspec mcp serve
+```
+
+- **身份**：每个工具调用自动用本进程 SSH 私钥签名（`AGENTICSPEC_SSH_KEY` → `~/.ssh/id_ed25519`
+  → `~/.ssh/id_rsa`），身份 = 该私钥在服务端登记的公钥所绑定账号；权限 = 账号角色 + grant
+  （ADR-007 §5）。bot 需独立身份时：给 bot 专属密钥并注册账号，启动时 `AGENTICSPEC_SSH_KEY` 指向它。
+- **基址**：`AGENTICSPEC_API_URL`（缺省 `http://127.0.0.1:8787`）。
+- **工具集**（10 个）：`docs_list` / `docs_get` / `docs_sections` / `docs_render` /
+  `nodes_list` / `nodes_get` / `nodes_write` / `nodes_delete` / `refs_write` / `refs_remove`。
+
+harness 挂载示例（stdio）：
+
+```
+command: uv
+args: ["run", "--project", "/home/lxx/wrk/AgenticSpec", "agenticspec", "mcp", "serve"]
+env:  AGENTICSPEC_SSH_KEY=/path/to/agent_key   （bot 独立身份时必填）
+     AGENTICSPEC_API_URL=http://127.0.0.1:8787
+```
+
 ## 测试
 
 ```bash
