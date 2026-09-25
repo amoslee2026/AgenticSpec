@@ -145,6 +145,7 @@ def normalize_key_id(key_id: str) -> str:
     )
     if token is None:
         token = stripped.split()[0] if stripped.split() else ""
+        return KEY_ID_PREFIX + token
     return KEY_ID_PREFIX + token[len(KEY_ID_PREFIX):]
 
 
