@@ -29,10 +29,10 @@ def _text_error(exc: CliError) -> RuntimeError:
     return RuntimeError(f"{exc.message}\n{hint}" if hint else exc.message)
 
 
-def build_server(client: SigningClient | None = None) -> FastMCP:
+def build_server(client: SigningClient | None = None) -> MCPServer:
     """装配 MCP server；``client`` 供测试注入（缺省用真实签名客户端）。"""
     svc = client or SigningClient()
-    server = FastMCP("agenticspec")
+    server = MCPServer("agenticspec")
 
     def invoke(method: str, path: str, **kw: Any) -> Any:
         try:
