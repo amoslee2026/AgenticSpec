@@ -16,7 +16,6 @@ export function LoginPage() {
   const [pasteOut, setPasteOut] = useState("");
   const [parseState, setParseState] = useState<"pending" | "ok" | "failed">("pending");
   const [ttl, setTtl] = useState<number | null>(null);
-  const [renewing, setRenewing] = useState(false);
 
   /** 命令输出 → 自动提取 FP 指纹行与 SSHSIG 签名块，回填两个输入框。 */
   function onPasteOutput(text: string) {
@@ -35,6 +34,8 @@ export function LoginPage() {
       const challenge = await authApi.challenge();
       setNonce(challenge.nonce);
       setSignature("");
+      setPasteOut("");
+      setParseState("pending");
       setTtl(Math.max(0, Math.round((Date.parse(challenge.expiresAt) - Date.now()) / 1000)));
     } catch (exc) {
       setError(exc instanceof Error ? exc.message : String(exc));
@@ -43,24 +44,16 @@ export function LoginPage() {
     }
   }
 
-  // 挑战 600s 内自动续期：剩余 ≤12s 且未登录时静默换新 nonce（对应命令随之更新）
+  // 仅倒计时显示；不自动换 nonce（避免用户在终端签名期间挑战被静默更换导致验签失败）
   useEffect(() => {
     if (!nonce || done) {
       return;
     }
     const timer = window.setInterval(() => {
-      setTtl((left) => {
-        const next = left === null ? null : Math.max(0, left - 1);
-        if (next !== null && next <= 12 && !renewing) {
-          setRenewing(true);
-          void fetchChallenge().finally(() => setRenewing(false));
-        }
-        return next;
-      });
+      setTtl((left) => (left === null ? null : Math.max(0, left - 1)));
     }, 1000);
     return () => window.clearInterval(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nonce, done, renewing]);
+  }, [nonce, done]);
 
   async function submit() {
     if (!nonce) {
