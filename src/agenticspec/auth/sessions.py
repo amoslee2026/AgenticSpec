@@ -55,7 +55,7 @@ from agenticspec.store.schema import nonces, sessions, users
 
 from .errors import AuthError, AuthenticationError, RateLimitError, SignatureFormatError
 from .signing import login_payload, normalize_key_id
-from .sshsig import parse_sshsig, verify_sshsig
+from .sshsig import fingerprint_of_blob, parse_sshsig, verify_sshsig
 from .users import fetch_active_key, fetch_user, flush_auth_failure_aggregates, user_from_row
 
 
