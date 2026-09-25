@@ -284,33 +284,37 @@ def test_fingerprint_and_key_type() -> None:
 
 
 def test_login_bad_signature_diagnosis_key_mismatch() -> None:
-    """签名由另一把私钥产生（帧内公钥指纹 ≠ 提交指纹）→ 提示用错私钥。"""
+    """签名帧内公钥指纹 ≠ 登记指纹（用错私钥）→ 展示真实 signer 指纹。"""
     signer = ed25519.Ed25519PrivateKey.generate()
     claimed = ed25519.Ed25519PrivateKey.generate()
     sig = signing.sign_message_armored(signer, b"payload")
     fp_signer = signing.fingerprint(signing.public_key_line(signer))
     fp_claimed = signing.fingerprint(signing.public_key_line(claimed))
-    result = sessions._bad_signature_error(fp_claimed, sig)
+    exc = SignatureVerificationError("mismatch", reason="public_key_mismatch")
+    result = sessions._bad_signature_error(exc, fp_claimed, sig)
     assert result.reason == "bad_signature"
     assert fp_signer in str(result)
     assert "不一致" in str(result)
 
 
 def test_login_bad_signature_diagnosis_nonce_mismatch() -> None:
-    """签名确是该公钥产生，但载荷不匹配 → 提示挑战已过期/更换。"""
+    """同一公钥验签失败（bad_signature）→ 提示挑战已过期/更换，不装解析失败。"""
     key = ed25519.Ed25519PrivateKey.generate()
     sig = signing.sign_message_armored(key, b"payload")
     fp = signing.fingerprint(signing.public_key_line(key))
-    result = sessions._bad_signature_error(fp, sig)
+    exc = SignatureVerificationError("Ed25519 验签失败", reason="bad_signature")
+    result = sessions._bad_signature_error(exc, fp, sig)
     assert result.reason == "bad_signature"
-    assert "nonce" in str(result)
+    assert "挑战" in str(result)
+    assert "签名" in str(result) and "该公钥" in str(result)
 
 
 def test_login_bad_signature_unparseable() -> None:
     """非 SSHSIG 内容 → 提示粘贴完整签名块。"""
-    result = sessions._bad_signature_error("SHA256:whatever", "garbage-not-a-signature")
+    exc = SignatureFormatError("frame truncated", reason="truncated")
+    result = sessions._bad_signature_error(exc, "SHA256:whatever", "garbage-not-a-signature")
     assert result.reason == "bad_signature"
-    assert "解析失败" in str(result)
+    assert "不完整" in str(result)
 
 
 def test_validate_public_key_rejects_malformed_lines() -> None:
