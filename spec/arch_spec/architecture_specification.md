@@ -745,6 +745,44 @@ def health() -> HealthReport: ...            # `agenticspec stats --health` 与 
 | `GET /api/v1/admin/metrics?since=&window=` | 指标快照（`MetricsSnapshot`） |
 | `GET /api/v1/admin/health` | 健康巡检（`HealthReport`） |
 
+### M13 MCP Server（L4 接口扩展；2026-09-25 新增）
+
+```python
+# agenticspec/mcp/server.py
+def build_server(client: SigningClient | None = None) -> MCPServer: ...
+def run_stdio() -> None: ...          # agenticspec mcp serve（Ctrl-C 退出）
+```
+
+AgenticSpec 暴露标准 MCP（Model Context Protocol）stdio 服务，供 GigaPie/opencode 等
+headless agent 以工具方式读写知识库（docs/nodes/refs/render 10 个工具）。
+
+**非独立业务模块**（不参与 §1.2 模块计数）：M13 是 **M06/M07 HTTP 契约的 stdio 载体**——
+每个工具调用复用 M11 `SigningClient` 构造一次**带 SSH 签名的 REST 请求**（method/path/body
+摘要/timestamp/nonce 四头），身份判定、RBAC、grant 门控、审计全部由既有 M10 服务端完成，
+无新增业务语义或存储。
+
+**身份**（与「agent 身份 = 启动它的人类用户」同一模型，ADR-007 B2）：签名私钥 = 本进程
+`AGENTICSPEC_SSH_KEY` → `~/.ssh/id_ed25519` → `~/.ssh/id_rsa`；bot 需独立身份时给 bot
+专属密钥并注册账号，启动时环境变量指向它即可。base URL 走 `AGENTICSPEC_API_URL`（缺省
+`http://127.0.0.1:8787`）。
+
+**工具→端点映射**（全部走签名请求）：
+
+| 工具 | 端点 |
+|---|---|
+| `docs_list(status?)` | `GET /api/v1/docs` |
+| `docs_get(docId)` | `GET /api/v1/docs/{id}` |
+| `docs_sections(docId)` | `GET /api/v1/docs/{id}/sections` |
+| `docs_render(docId, section?)` | `GET /api/v1/docs/{id}/render` |
+| `nodes_list(docId)` | `GET /api/v1/docs/{id}/nodes` |
+| `nodes_get(nodeId, docId?)` | `GET /api/v1/nodes/{id}` |
+| `nodes_write(body)` | `POST /api/v1/nodes` |
+| `nodes_delete(nodeId, expectedVersion)` | `DELETE /api/v1/nodes/{id}` |
+| `refs_write(body)` / `refs_remove(body)` | `POST/DELETE /api/v1/refs` |
+
+**错误语义**：SigningClient 的 401/403/404/409/422 指引（含登记/授权命令）经
+`ToolError` 透传给 MCP 客户端（协议层以工具错误呈现），agent 可据指引自修复重试。
+
 ## 4. 数据库 DDL（PostgreSQL 16，database `agenticspec`；v1.3）
 
 ```sql
