@@ -272,6 +272,10 @@ def test_fingerprint_and_key_type() -> None:
     assert signing.fingerprint(line) == expected
     assert expected == sshsig.fingerprint_of_blob(_ssh_blob(key.public_key()))
     assert signing.normalize_key_id(expected.removeprefix("SHA256:")) == expected
+    # ssh-keygen -lf 整行输出（尾随位数/注释）只取指纹段；首尾空白容忍
+    assert signing.normalize_key_id(f"{expected} user@host") == expected
+    assert signing.normalize_key_id(f"  {expected}  256 user@host  ") == expected
+    assert signing.normalize_key_id("") == signing.KEY_ID_PREFIX
     assert signing.key_type_for(line) == "ssh-ed25519"
 
     rsa_line = signing.public_key_line(rsa.generate_private_key(public_exponent=65537, key_size=3072))
