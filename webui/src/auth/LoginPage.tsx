@@ -49,8 +49,8 @@ export function LoginPage() {
   }
 
   const nonceText = nonce ?? "<页面上的nonce>";
-  // 一条命令完成：写 nonce 文件 → 签名 → 打印指纹（nonce 内嵌，复制即用）
-  const winOneCmd = `[System.IO.File]::WriteAllText("$env:TEMP\\agenticspec-nonce.txt", "${nonceText}") ; ssh-keygen -Y sign -f $env:USERPROFILE\\.ssh\\id_ed25519 -n agenticspec@auth "$env:TEMP\\agenticspec-nonce.txt" ; ssh-keygen -lf $env:USERPROFILE\\.ssh\\id_ed25519.pub`;
+  // 一条命令完成：写 nonce 文件 → 签名 → 输出两段（FP 指纹行 + SSHSIG 签名块），页面自动拆分
+  const winOneCmd = `$f="$env:TEMP\\agenticspec-nonce.txt"; [IO.File]::WriteAllText($f, "${nonceText}"); ssh-keygen -Y sign -f $env:USERPROFILE\\.ssh\\id_ed25519 -n agenticspec@auth $f | Out-Null; $fp=((ssh-keygen -lf $env:USERPROFILE\\.ssh\\id_ed25519.pub) -split ' ')[1]; Write-Output "FP $fp"; Get-Content "$f.sig" -Raw`;
   const cliSign = `uv run agenticspec auth sign --login --nonce ${nonceText}`;
 
   async function copyCmd() {
