@@ -59,27 +59,42 @@ from .sshsig import fingerprint_of_blob, parse_sshsig, verify_sshsig
 from .users import fetch_active_key, fetch_user, flush_auth_failure_aggregates, user_from_row
 
 
-def _bad_signature_error(key_id: str, signature: str) -> AuthenticationError:
-    """验签失败的**可操作诊断**：从 SSHSIG 帧内提取签名实际所用公钥指纹，
-    区分「用错私钥」与「载荷 nonce 与挑战不一致」两类根因（S11 同验签器复用）。
+def _bad_signature_error(exc: AuthError, key_id: str, signature: str) -> AuthenticationError:
+    """验签失败的**可操作诊断**：按 ``verify_sshsig`` 的 reason 分类给补救动作。
+
+    - ``public_key_mismatch``：签名帧内嵌公钥 ≠ 登记公钥（用错私钥）→ 解析帧展示真实 signer；
+    - ``bad_signature``：同一公钥下验签失败 = 载荷(nonce) 与挑战不一致；
+    - 其余解析/格式错误 → 提示完整粘贴签名块。
     """
-    try:
-        signer = fingerprint_of_blob(parse_sshsig(signature).public_key_blob)
-    except SignatureFormatError as exc:
+    reason = getattr(exc, "reason", "bad_signature")
+    if reason == "public_key_mismatch":
+        try:
+            signer = fingerprint_of_blob(parse_sshsig(signature).public_key_blob)
+        except SignatureFormatError:
+            signer = "(无法解析)"
         return AuthenticationError(
-            f"签名解析失败（{exc.reason}）：请粘贴完整 \"-----BEGIN SSH SIGNATURE-----…-----\" 块",
+            f"验签失败：该签名由公钥 {signer} 生成，与登记指纹 {key_id} 不一致——"
+            "请确认签名命令的私钥路径（-f）就是已登记公钥对应的私钥",
             reason="bad_signature",
         )
-    if signer != key_id:
+    if reason == "namespace_mismatch":
         return AuthenticationError(
-            f"验签失败：该签名由公钥 {signer} 生成，与你填写的指纹 {key_id} 不一致——"
-            "请确认签名命令中的私钥路径（-f）就是已注册/你填写的公钥对应私钥",
+            "签名 namespace 不符（应为 agenticspec@auth）：请原样使用页面命令，勿改动",
+            reason="bad_signature",
+        )
+    if reason == "bad_signature":
+        return AuthenticationError(
+            "验签失败：签名确由该公钥生成，但载荷与当前挑战不一致（挑战已过期或已更换）——"
+            "请重新获取挑战后立即复制新命令签名并提交（10 分钟内完成）",
+            reason="bad_signature",
+        )
+    if reason in ("bad_signature_length", "truncated", "trailing_bytes", "bad_base64"):
+        return AuthenticationError(
+            "签名块不完整：请完整复制 \"-----BEGIN SSH SIGNATURE-----…-----\" 整块",
             reason="bad_signature",
         )
     return AuthenticationError(
-        "验签失败：签名确由该公钥生成，但载荷 nonce 不匹配——挑战已过期或已更换，"
-        "请回到页面重新获取挑战后在 600s 内签名并提交",
-        reason="bad_signature",
+        f"签名无效（{reason}）：请确认粘贴的是完整签名块", reason="bad_signature"
     )
 
 __all__ = [
