@@ -53,10 +53,34 @@ from agenticspec.store import (
 from agenticspec.store.rows import row_to_dict
 from agenticspec.store.schema import nonces, sessions, users
 
-from .errors import AuthError, AuthenticationError, RateLimitError
+from .errors import AuthError, AuthenticationError, RateLimitError, SignatureFormatError
 from .signing import login_payload, normalize_key_id
-from .sshsig import verify_sshsig
+from .sshsig import parse_sshsig, verify_sshsig
 from .users import fetch_active_key, fetch_user, flush_auth_failure_aggregates, user_from_row
+
+
+def _bad_signature_error(key_id: str, signature: str) -> AuthenticationError:
+    """验签失败的**可操作诊断**：从 SSHSIG 帧内提取签名实际所用公钥指纹，
+    区分「用错私钥」与「载荷 nonce 与挑战不一致」两类根因（S11 同验签器复用）。
+    """
+    try:
+        signer = parse_sshsig(signature).fingerprint
+    except SignatureFormatError as exc:
+        return AuthenticationError(
+            f"签名解析失败（{exc.reason}）：请粘贴完整 \"-----BEGIN SSH SIGNATURE-----…-----\" 块",
+            reason="bad_signature",
+        )
+    if signer != key_id:
+        return AuthenticationError(
+            f"验签失败：该签名由公钥 {signer} 生成，与你填写的指纹 {key_id} 不一致——"
+            "请确认签名命令中的私钥路径（-f）就是已注册/你填写的公钥对应私钥",
+            reason="bad_signature",
+        )
+    return AuthenticationError(
+        "验签失败：签名确由该公钥生成，但载荷 nonce 不匹配——挑战已过期或已更换，"
+        "请回到页面重新获取挑战后在 600s 内签名并提交",
+        reason="bad_signature",
+    )
 
 __all__ = [
     "CHALLENGE_TTL_SECONDS",
