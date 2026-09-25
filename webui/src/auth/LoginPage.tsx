@@ -162,7 +162,7 @@ export function LoginPage() {
             </div>
           </details>
           <div className="login-foot">
-            会话 8 小时滑动续期 · 无密码体系，身份唯一根为 SSH 公钥（ADR-007）
+            会话 1 年滑动续期 · 无密码体系，身份唯一根为 SSH 公钥（ADR-007）
           </div>
           {done ? <div className="notice ok">登录成功，正在进入…</div> : null}
         </div>
