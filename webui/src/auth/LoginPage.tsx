@@ -125,15 +125,6 @@ export function LoginPage() {
                 <code>-----BEGIN…END SSH SIGNATURE-----</code> 签名块，整段贴到第 3 步即可自动拆分。
                 已装 AgenticSpec CLI 时可改用 <code>{cliSign}</code>。
               </div>
-              <label className="field">
-                <span>公钥指纹（上条命令运行后终端输出的 SHA256:…）</span>
-                <input
-                  type="text"
-                  placeholder="SHA256:…"
-                  value={fingerprint}
-                  onChange={(e) => setFingerprint(e.target.value)}
-                />
-              </label>
             </div>
 
             <div className="login-step">
