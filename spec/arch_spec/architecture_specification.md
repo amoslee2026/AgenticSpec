@@ -215,6 +215,7 @@ src/agenticspec/
 ├── auth/           # M10（ssh_verify.py, sessions.py, rbac.py, users.py, cli.py）—— 批注 B2/B3
 ├── observability/  # M12（logger.py, rid.py, metrics.py, health.py, cli.py）—— ADR-010
 ├── mlr/            # M-LR（export.py, stream.py）
+├── mcp/            # M13（server.py：标准 MCP stdio 服务，M06/M07 契约的 shell 载体）
 ├── cli.py          # M11 统一 CLI 装配（import/render/auth/user/doc/node/comment/logs/stats，§9.2）
 └── app.py          # FastAPI 装配（M08 静态挂载 + M10 鉴权中间件 + M12 埋点中间件）
 webui/              # M08（React+TS+Vite；登录页走 SSH 挑战-响应）
