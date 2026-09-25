@@ -142,6 +142,14 @@ export function LoginPage() {
                   <b>粘贴登录</b>：把指纹与完整签名块分别粘贴到上方输入框，点「登录」。
                 </li>
               </ol>
+              <div className="login-help-alt">
+                <b>Windows（Win10/11 内置 OpenSSH，无需安装 CLI）</b>：上方第 2 步命令可换成 PowerShell 原生签名——
+                先把 nonce 不带换行写入文件，再用 <code>ssh-keygen -Y sign</code> 签名：
+                <div className="cmd-hint">[System.IO.File]::WriteAllText("$env:TEMP\nonce.txt", "&lt;页面上的nonce&gt;")</div>
+                <div className="cmd-hint">ssh-keygen -Y sign -f $env:USERPROFILE\.ssh\id_ed25519 -n agenticspec@auth $env:TEMP\nonce.txt</div>
+                签名生成在 <code>%TEMP%\once.txt.sig</code>；把该文件内容（<code>-----BEGIN SSH SIGNATURE-----</code> 整块）与
+                <code>ssh-keygen -lf $env:USERPROFILE\.ssh\id_ed25519.pub</code> 的 <code>SHA256:…</code> 指纹粘贴到上方对应输入框。
+              </div>
               <div className="login-help-notes">
                 <p>常见问题：</p>
                 <ul>
