@@ -151,12 +151,13 @@ export function LoginPage() {
                 </li>
               </ol>
               <div className="login-help-notes">
-                <p>常见问题：</p>
+                <p>常见问题（状态码为登录接口实际返回）：</p>
                 <ul>
-                  <li>找不到私钥 / 提示无可用 SSH 私钥：先 <code>ssh-keygen -t ed25519</code> 生成并注册公钥（管理员在「用户管理」添加）。</li>
-                  <li>验签失败（SignatureVerificationError）：公钥未被注册，或本机时钟偏移超过 ±300s（超前 &gt;30s 同样拒绝）——先同步 NTP 再重试。</li>
-                  <li>nonce 已使用（重放拒绝）：签名只能用一次，重新获取挑战再签。</li>
-                  <li>系统无任何 <code>active</code> admin 时全部请求 401（fail-closed）：管理员先执行 <code>agenticspec auth bootstrap</code> 自举。</li>
+                  <li>找不到私钥：先 <code>ssh-keygen -t ed25519</code> 生成密钥对，并把公钥让管理员在「用户管理」注册。</li>
+                  <li><code>403</code> 公钥未注册或其属主已禁用（S8）：公钥匹配不到可用账号，联系管理员添加/启用后重试。</li>
+                  <li><code>401</code> 验签失败（SignatureVerificationError）：用错私钥（指纹与签名不配对）、<code>.sig</code> 未整块复制、或 nonce 写入文件时带了换行/空格。验签失败<strong>不消耗挑战</strong>，120s 内可直接重试。时钟时间窗（±300s）只约束 CLI/API 请求签名（X-Timestamp），与登录无关。</li>
+                  <li><code>401</code> 挑战未知或已过期：nonce 一次性、TTL 120s，重新点「获取挑战」再签。</li>
+                  <li>系统无任何 <code>active</code> admin（fail-closed）：登录无法匹配到用户，管理员先执行 <code>agenticspec auth bootstrap</code> 自举。</li>
                 </ul>
               </div>
             </div>
