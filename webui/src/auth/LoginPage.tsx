@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { authApi } from "../api/endpoints";
 import { ApiError } from "../api/client";
 import { useAuth } from "./AuthContext";
@@ -15,6 +15,8 @@ export function LoginPage() {
   const [copied, setCopied] = useState(false);
   const [pasteOut, setPasteOut] = useState("");
   const [parseState, setParseState] = useState<"pending" | "ok" | "failed">("pending");
+  const [ttl, setTtl] = useState<number | null>(null);
+  const [renewing, setRenewing] = useState(false);
 
   /** 命令输出 → 自动提取 FP 指纹行与 SSHSIG 签名块，回填两个输入框。 */
   function onPasteOutput(text: string) {
