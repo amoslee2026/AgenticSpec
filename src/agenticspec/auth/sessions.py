@@ -128,7 +128,7 @@ def rate_limit_per_min() -> int:
 
 
 def challenge_ttl_seconds() -> int:
-    """登录挑战 TTL（固定 120s）。"""
+    """登录挑战 TTL（:data:`CHALLENGE_TTL_SECONDS`，600s）。"""
     return CHALLENGE_TTL_SECONDS
 
 
